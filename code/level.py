@@ -44,7 +44,13 @@ class Level:
 
         # trees
         for obj in tmx_data.get_layer_by_name('Trees'):
-            Tree((obj.x, obj.y), obj.image, [self.all_sprites, self.collision_sprites, self.tree_sprites], obj.name)
+            Tree(
+                pos=(obj.x, obj.y),
+                surf=obj.image,
+                groups=[self.all_sprites, self.collision_sprites,self.tree_sprites],
+                name=obj.name,
+                player_add=self.player_add
+            )
 
         # wildflowers
         for obj in tmx_data.get_layer_by_name('Decoration'):
@@ -72,6 +78,9 @@ class Level:
             z=LAYERS['ground']
         )
 
+    def player_add(self, item):
+        self.player.item_inventory[item] += 1
+
     def run(self, dt):
         self.display_surface.fill('black')
         self.all_sprites.draw(self.display_surface)
@@ -97,10 +106,10 @@ class CameraGroup(pygame.sprite.Group):
                     offset_rect.center -= self.offset
                     self.display_surface.blit(sprite.image, offset_rect)
 
-                    if sprite == player:
-                        pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
-                        hitbox_rect = player.hitbox.copy()
-                        hitbox_rect.center = offset_rect.center
-                        pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
-                        target_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.status.split('_')[0]]
-                        pygame.draw.circle(self.display_surface, 'blue', target_pos, 5)
+                    # if sprite == player:
+                    #     pygame.draw.rect(self.display_surface, 'red', offset_rect, 5)
+                    #     hitbox_rect = player.hitbox.copy()
+                    #     hitbox_rect.center = offset_rect.center
+                    #     pygame.draw.rect(self.display_surface, 'green', hitbox_rect, 5)
+                    #     target_pos = offset_rect.center + PLAYER_TOOL_OFFSET[player.status.split('_')[0]]
+                    #     pygame.draw.circle(self.display_surface, 'blue', target_pos, 5)
