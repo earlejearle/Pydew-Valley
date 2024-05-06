@@ -24,14 +24,27 @@ class Player(pygame.sprite.Sprite):
 
         # timers
         self.timers = {
-            'tool_use': Timer(350, self.use_tool)
+            'tool_use': Timer(350, self.use_tool),
+            'tool_switch': Timer(200),
+            'seed_use': Timer(350, self.use_seed),
+            'seed_switch': Timer(200)
         }
 
         # tools
-        self.selected_tool = 'axe'
+        self.tools = ['hoe', 'axe', 'water']
+        self.tool_index = 0
+        self.selected_tool = self.tools[self.tool_index]
+
+        # seeds
+        self.seeds = ['corn', 'tomato']
+        self.seed_index = 0
+        self.selected_seed = self.seeds[self.seed_index]
 
     def use_tool(self):
-        print(self.selected_tool)
+        pass
+
+    def use_seed(self):
+        pass
 
     def import_assets(self):
         self.animations = {'up': [], 'down': [], 'left': [], 'right': [],
@@ -79,6 +92,28 @@ class Player(pygame.sprite.Sprite):
                 self.direction = pygame.math.Vector2()
                 self.frame_index = 0
 
+            # change tool
+            if keys[pygame.K_q] and not self.timers['tool_switch'].active:
+                self.timers['tool_switch'].activate()
+                self.tool_index += 1
+                if self.tool_index >= len(self.tools):
+                    self.tool_index = 0
+                self.selected_tool = self.tools[self.tool_index]
+
+            # seed use
+            if keys[pygame.K_LCTRL]:
+                self.timers['seed_use'].activate()
+                self.direction = pygame.math.Vector2()
+                self.frame_index = 0
+
+            # change tool
+            if keys[pygame.K_e] and not self.timers['seed_switch'].active:
+                self.timers['seed_switch'].activate()
+                self.seed_index += 1
+                if self.seed_index >= len(self.seeds):
+                    self.seed_index = 0
+                self.selected_seed = self.seeds[self.seed_index]
+
     def get_status(self):
         # idle
         if self.direction.magnitude() == 0:
@@ -86,7 +121,7 @@ class Player(pygame.sprite.Sprite):
 
         # tool use
         if self.timers['tool_use'].active:
-            self.status = self.status.split('_')[0] + '_axe'
+            self.status = self.status.split('_')[0] + '_' + self.selected_tool
 
     def update_timers(self):
         for timer in self.timers.values():
@@ -100,6 +135,7 @@ class Player(pygame.sprite.Sprite):
         # horizontal movement
         self.pos.x += self.direction.x * self.speed * dt
         self.rect.centerx = self.pos.x
+
         # vertical movement
         self.pos.y += self.direction.y * self.speed * dt
         self.rect.centery = self.pos.y
