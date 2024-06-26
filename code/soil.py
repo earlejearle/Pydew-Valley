@@ -1,6 +1,7 @@
 import pygame
 from settings import *
 from pytmx.util_pygame import load_pygame
+from support import import_folder_dict
 
 
 class SoilTile(pygame.sprite.Sprite):
@@ -20,6 +21,8 @@ class SoilLayer:
 
         # graphics
         self.soil_surf = pygame.image.load('../graphics/soil/o.png').convert_alpha()
+        self.soil_surfs = import_folder_dict('../graphics/soil')
+
         self.create_soil_grid()
         self.create_hit_rects()
 
@@ -56,4 +59,41 @@ class SoilLayer:
         for index_row, row in enumerate(self.grid):
             for index_col, cell in enumerate(row):
                 if 'X' in cell:
-                    SoilTile((index_col * TILE_SIZE, index_row * TILE_SIZE), self.soil_surf, [self.all_sprites, self.soil_sprites])
+                    # tile options
+                    t = 'X' in self.grid[index_row - 1][index_col]
+                    r = 'X' in row[index_col + 1]
+                    l = 'X' in row[index_col - 1]
+                    b = 'X' in self.grid[index_row + 1][index_col]
+
+                    tile_type = 'o'
+
+                    # all sides
+                    if all((t, r, l, b)): tile_type = 'x'
+
+                    # horizontal tiles only
+                    if l and not any((t, r, b)): tile_type = 'r'
+                    if r and not any((t, l, b)): tile_type = 'l'
+                    if l and r and not any((t, b)): tile_type = 'lr'
+
+                    # vertical tiles only
+                    if t and not any((l, r, b)): tile_type = 'b'
+                    if b and not any((l, r, t)): tile_type = 't'
+                    if t and b and not any((l, r)): tile_type = 'tb'
+
+                    # corners
+                    if t and l and not any((b, r)): tile_type = 'br'
+                    if t and r and not any((b, l)): tile_type = 'bl'
+                    if b and l and not any((t, r)): tile_type = 'tr'
+                    if b and r and not any((t, l)): tile_type = 'tl'
+
+                    # t shapes
+                    if all((l, r, t)) and not b: tile_type = 'lrb'
+                    if all((l, r, b)) and not t: tile_type = 'lrt'
+                    if all((t, b, l)) and not r: tile_type = 'tbl'
+                    if all((t, b, r)) and not l: tile_type = 'tbr'
+
+                    SoilTile(
+                        pos=(index_col * TILE_SIZE, index_row * TILE_SIZE),
+                        surf=self.soil_surfs[tile_type],
+                        groups=[self.all_sprites, self.soil_sprites]
+                    )
